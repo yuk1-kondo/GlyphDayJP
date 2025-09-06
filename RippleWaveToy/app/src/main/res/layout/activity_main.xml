@@ -10,7 +10,7 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Hamon"
+        android:text="@string/title_main"
         android:textSize="32sp"
         android:textColor="#FFFFFF"
         android:gravity="center"
@@ -19,7 +19,7 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="波紋トイ シミュレーター"
+        android:text="@string/subtitle_main"
         android:textSize="18sp"
         android:textColor="#CCCCCC"
         android:gravity="center"
@@ -29,7 +29,7 @@
         android:id="@+id/simulator_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="シミュレーター起動"
+        android:text="@string/btn_launch_simulator"
         android:textSize="18sp"
         android:padding="16dp"
         android:background="#4CAF50"
@@ -40,10 +40,21 @@
         android:id="@+id/toy_info_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="トイの情報"
+        android:text="@string/btn_toy_info"
         android:textSize="16sp"
         android:padding="12dp"
         android:background="#2196F3"
+        android:textColor="#FFFFFF"
+        android:layout_marginBottom="16dp"/>
+
+    <Button
+        android:id="@+id/weekday_preview_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/btn_weekday_preview"
+        android:textSize="18sp"
+        android:padding="16dp"
+        android:background="#9C27B0"
         android:textColor="#FFFFFF"
         android:layout_marginBottom="24dp"/>
 
@@ -61,7 +72,7 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="※ エミュレーター用のシミュレーターです\n実機ではGlyph Matrixに表示されます"
+        android:text="@string/footer_note"
         android:textSize="12sp"
         android:textColor="#888888"
         android:gravity="center"

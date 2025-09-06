@@ -1,0 +1,40 @@
+name: Android CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: 'gradle'
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x RippleWaveToy/gradlew
+
+      - name: Build (Release)
+        working-directory: RippleWaveToy
+        run: ./gradlew assembleWeekdayDeviceRelease --stacktrace --no-daemon
+
+      - name: Lint (Vital)
+        working-directory: RippleWaveToy
+        run: ./gradlew lintVitalWeekdayDeviceRelease --stacktrace --no-daemon
+
+      - name: Upload APK artifact
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-weekday-device-release
+          path: RippleWaveToy/app/build/outputs/apk/weekdayDevice/release/*.apk
+

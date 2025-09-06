@@ -21,9 +21,14 @@ public class MainActivity extends Activity {
         
         Button simulatorButton = findViewById(R.id.simulator_button);
         Button toyInfoButton = findViewById(R.id.toy_info_button);
+        Button previewButton = findViewById(R.id.weekday_preview_button);
         
         simulatorButton.setOnClickListener(v -> {
             Intent intent = new Intent(this, com.example.ripplewavetoy.simulator.RippleWaveSimulatorActivity.class);
+            startActivity(intent);
+        });
+        previewButton.setOnClickListener(v -> {
+            Intent intent = new Intent(this, com.example.ripplewavetoy.WeekdayPreviewActivity.class);
             startActivity(intent);
         });
         
@@ -35,14 +40,11 @@ public class MainActivity extends Activity {
     
     private void showToyInfo() {
         TextView infoText = findViewById(R.id.info_text);
-        String info = "Hamon について\n\n" +
-                     "• 静寂の水面に広がる波紋を表現\n" +
-                     "• モード: 禅 / 波紋 / 雨\n" +
-                     "  - 禅: 一滴が静かに広がる\n" +
-                     "  - 波紋: 先頭リングに後続リングが追従\n" +
-                     "  - 雨: ランダムな多点の雨粒、シェイクでバースト\n" +
-                     "• AOD対応で省電力の演出\n" +
-                     "• 実機ではGlyph Matrixに表示\n\n" +
+        String info = "曜日表示 について\n\n" +
+                     "• 端末の日付に応じて曜日（漢字）を表示\n" +
+                     "• 長押しで反転表示の切替\n" +
+                     "• 端末シェイクで崩落アニメーション\n" +
+                     "• AOD時は静止表示\n\n" +
                      "※ このシミュレーターは25x25グリッドを画面に表示します";
         infoText.setText(info);
         infoText.setVisibility(View.VISIBLE);

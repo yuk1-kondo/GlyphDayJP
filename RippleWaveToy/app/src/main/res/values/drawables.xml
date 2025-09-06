@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item name="img_toy_preview_weekday" type="drawable">@drawable/img_toy_preview_ripple</item>
+</resources>
+
+

@@ -33,6 +33,13 @@ android {
                 keyAlias keystoreProperties['keyAlias']
                 keyPassword keystoreProperties['keyPassword']
             }
+        } else {
+            release {
+                storeFile file(rootProject.file('release.jks'))
+                storePassword 'dotweekday123'
+                keyAlias 'dotweekday'
+                keyPassword 'dotweekday123'
+            }
         }
     }
 
@@ -42,17 +49,18 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             if (hasKeystore) {
                 signingConfig signingConfigs.release
+            } else {
+                signingConfig signingConfigs.release
             }
         }
     }
     
-    // エミュレーター用と実機用で異なる設定
-    flavorDimensions "target"
+    // シンプルなフレーバー構成（weekday × device のみ）
+    flavorDimensions "product", "target"
     productFlavors {
-        emulator {
-            dimension "target"
-            applicationIdSuffix ".emulator"
-            versionNameSuffix "-emulator"
+        weekday {
+            dimension "product"
+            applicationId "com.example.weekdayglyph"
         }
         device {
             dimension "target"

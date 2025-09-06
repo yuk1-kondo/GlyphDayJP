@@ -1,8 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Hamon</string>
-    <string name="toy_name_hamon">Hamon</string>
-    <string name="toy_summary_hamon">Concentric ripples on a calm water surface. Long-press to switch Zen / Hamon / Rain.</string>
+    <string name="app_name">Weekday</string>
+    <string name="toy_name_weekday">Weekday</string>
+    <string name="toy_summary_weekday">Displays the weekday kanji on the Glyph Matrix based on device date.</string>
+    <string name="title_main">Weekday</string>
+    <string name="subtitle_main">Weekday Toy Simulator</string>
+    <string name="btn_launch_simulator">Launch Simulator</string>
+    <string name="btn_toy_info">Toy Info</string>
+    <string name="btn_weekday_preview">Weekday Preview</string>
+    <string name="footer_note">* This is a simulator for emulator\nOn device it renders on the Glyph Matrix</string>
 </resources>
 
 

@@ -1,8 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Hamon</string>
-    <string name="toy_name_ripple">Hamon</string>
-    <string name="toy_summary_ripple">静寂の水面に広がる波紋。長押しで禅/波紋/雨の表現を切替。</string>
-    <string name="toy_name_hamon">Hamon</string>
-    <string name="toy_summary_hamon">静寂の水面に広がる波紋。長押しで禅/波紋/雨の表現を切替。</string>
+    <string name="app_name">曜日表示</string>
+    <string name="toy_name_weekday">曜日表示</string>
+    <string name="toy_summary_weekday">端末の日付に基づいて、グリフマトリクスに曜日（漢字）を表示。</string>
+    <string name="title_main">曜日表示</string>
+    <string name="subtitle_main">曜日トイ シミュレーター</string>
+    <string name="btn_launch_simulator">シミュレーター起動</string>
+    <string name="btn_toy_info">トイの情報</string>
+    <string name="btn_weekday_preview">曜日プレビュー</string>
+    <string name="footer_note">※ エミュレーター用のシミュレーターです\n実機ではGlyph Matrixに表示されます</string>
 </resources>
