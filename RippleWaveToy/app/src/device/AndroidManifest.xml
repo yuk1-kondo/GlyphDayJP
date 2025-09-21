@@ -5,12 +5,10 @@
     <application>
         <!-- Remove emulator UI from device flavor -->
         <activity android:name=".MainActivity" tools:node="remove" />
-        <activity android:name=".simulator.RippleWaveSimulatorActivity" tools:node="remove" />
     </application>
 
     <!-- Service and permissions remain from main manifest -->
 </manifest>
-
 
 
 

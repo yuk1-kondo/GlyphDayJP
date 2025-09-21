@@ -1,12 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">曜日表示</string>
-    <string name="toy_name_weekday">曜日表示</string>
+    <string name="app_name">GlyphDayJP</string>
+    <string name="toy_name_weekday">GlyphDayJP</string>
     <string name="toy_summary_weekday">端末の日付に基づいて、グリフマトリクスに曜日（漢字）を表示。</string>
-    <string name="title_main">曜日表示</string>
-    <string name="subtitle_main">曜日トイ シミュレーター</string>
-    <string name="btn_launch_simulator">シミュレーター起動</string>
+    <string name="title_main">GlyphDayJP</string>
+    <string name="subtitle_main">曜日トイ プレビュー</string>
     <string name="btn_toy_info">トイの情報</string>
     <string name="btn_weekday_preview">曜日プレビュー</string>
-    <string name="footer_note">※ エミュレーター用のシミュレーターです\n実機ではGlyph Matrixに表示されます</string>
+    <string name="footer_note">※ このアプリは25x25グリッド上で曜日表示をプレビューするためのツールです</string>
 </resources>

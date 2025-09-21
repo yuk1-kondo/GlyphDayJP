@@ -23,13 +23,7 @@
             </intent-filter>
         </activity>
 
-        <!-- Simulator Activity -->
-        <activity
-            android:name=".simulator.RippleWaveSimulatorActivity"
-            android:exported="false"
-            android:theme="@style/Theme.AppCompat.Light.DarkActionBar" />
-
-        <!-- Hamon Toy Service Registration -->
+        <!-- GlyphDayJP Toy Service Registration -->
         <service
             android:name=".toy.RippleWaveToyService"
             android:exported="true">

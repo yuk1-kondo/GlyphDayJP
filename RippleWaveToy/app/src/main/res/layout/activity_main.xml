@@ -26,17 +26,6 @@
         android:layout_marginBottom="32dp"/>
 
     <Button
-        android:id="@+id/simulator_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/btn_launch_simulator"
-        android:textSize="18sp"
-        android:padding="16dp"
-        android:background="#4CAF50"
-        android:textColor="#FFFFFF"
-        android:layout_marginBottom="16dp"/>
-
-    <Button
         android:id="@+id/toy_info_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

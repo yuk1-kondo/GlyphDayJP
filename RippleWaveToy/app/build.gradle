@@ -12,11 +12,11 @@ if (hasKeystore) {
 }
 
 android {
-    namespace 'com.example.ripplewavetoy'
+    namespace 'com.yukknd.glyphdayjp'
     compileSdk 34
 
     defaultConfig {
-        applicationId "com.example.ripplewavetoy"
+        applicationId "com.yukknd.glyphdayjp"
         minSdk 34
         targetSdk 34
         versionCode 1
@@ -60,7 +60,7 @@ android {
     productFlavors {
         weekday {
             dimension "product"
-            applicationId "com.example.weekdayglyph"
+            applicationId "com.yukknd.glyphdayjp"
         }
         device {
             dimension "target"

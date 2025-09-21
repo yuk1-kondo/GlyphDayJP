@@ -54,6 +54,10 @@ public class RippleWaveToyService extends Service {
 
     private static final char[] WEEK_KANJI = new char[] {'\u65e5','\u6708','\u706b','\u6c34','\u6728','\u91d1','\u571f'}; // 日月火水木金土
     private static final char[] WEEK_KANJI_MON_FIRST = new char[] {'\u6708','\u706b','\u6c34','\u6728','\u91d1','\u571f','\u65e5'}; // 月火水木金土日
+    
+    // デバッグ用: 3秒おきに全曜日を順次表示
+    private boolean debugCycleMode = false;
+    private int debugCycleIndex = 0;
 
     private boolean isAodMode = false;
     // Scheduling
@@ -158,8 +162,13 @@ public class RippleWaveToyService extends Service {
                     Log.w(TAG, "GlyphMatrix register failed for all candidates");
                     return;
                 }
-                // Start with today's Kanji falling animation
-                startFallingToKanji(getWeekdayKanji());
+                // Start with debug cycle or today's Kanji
+                if (debugCycleMode) {
+                    debugCycleIndex = 0;
+                    startFallingToKanji(WEEK_KANJI[0]); // 日から開始
+                } else {
+                    startFallingToKanji(getWeekdayKanji());
+                }
                 scheduleDailyRefresh();
                 setupSensors();
             }
@@ -200,10 +209,25 @@ public class RippleWaveToyService extends Service {
     private void scheduleDailyRefresh() {
         stopDailyRefresh();
         if (scheduler == null) return;
-        long delay = millisUntilNextMidnight();
-        dailyFuture = scheduler.scheduleAtFixedRate(() -> {
-            if (!isAodMode) serviceHandler.post(() -> startFallingToKanji(getWeekdayKanji()));
-        }, delay, 24L * 60L * 60L * 1000L, TimeUnit.MILLISECONDS);
+        
+        if (debugCycleMode) {
+            // デバッグモード: 3秒おきに全曜日を順次表示
+            dailyFuture = scheduler.scheduleAtFixedRate(() -> {
+                if (!isAodMode) {
+                    serviceHandler.post(() -> {
+                        char kanji = WEEK_KANJI[debugCycleIndex];
+                        startFallingToKanji(kanji);
+                        debugCycleIndex = (debugCycleIndex + 1) % WEEK_KANJI.length;
+                    });
+                }
+            }, 0L, 3000L, TimeUnit.MILLISECONDS);
+        } else {
+            // 通常モード: 日付に基づく表示
+            long delay = millisUntilNextMidnight();
+            dailyFuture = scheduler.scheduleAtFixedRate(() -> {
+                if (!isAodMode) serviceHandler.post(() -> startFallingToKanji(getWeekdayKanji()));
+            }, delay, 24L * 60L * 60L * 1000L, TimeUnit.MILLISECONDS);
+        }
     }
     private void stopDailyRefresh() {
         if (dailyFuture != null) { try { dailyFuture.cancel(true); } catch (Throwable ignored) {} dailyFuture = null; }
