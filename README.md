@@ -1,67 +1,67 @@
 # GlyphDayJP
 
-Nothing Phone の Glyph Matrix に「曜日の漢字」を表示するトイです。端末の日付に基づき、25×25 の円形領域内に当日の漢字（`日月火水木金土`）をアンチエイリアスで描画します。
+A Glyph Toy for Nothing Phone that displays "weekday kanji characters" on the Glyph Matrix. Based on the device date, it renders the current day's kanji character (`日月火水木金土`) with anti-aliasing within a 25×25 circular area.
 
-## 機能
+## Features
 
-- **当日表示**: 端末日付から曜日の漢字を選択して表示
-- **長押し**: 反転表示の切り替え（白黒反転）
-- **シェイク**: 粒子が崩れ落ちるアニメーション（5秒後に当日の漢字に復帰）
-- **AOD対応**: 常時表示時はアニメ停止・静止表示
-- **自動更新**: 深夜に翌日の漢字へ自動切り替え
+- **Daily Display**: Automatically selects and displays the weekday kanji based on device date
+- **Long Press**: Toggle inverted display (white/black inversion)
+- **Shake Gesture**: Particle collapse animation (returns to current day's kanji after 5 seconds)
+- **AOD Support**: Animation stops and shows static display during Always-On Display
+- **Auto Update**: Automatically switches to next day's kanji at midnight
 
-## 画面/構成
+## Project Structure
 
-- `app/src/main/java/.../MainActivity.java`: エミュレータ用の簡易プレビュー UI
-- `app/src/weekdayDevice/.../RippleWaveToyService.java`: 実機向けトイサービス（Glyph SDK連携）
-- `app/src/main/java/.../WeekdayPreviewActivity.java`: 曜日プレビュー画面
-- `app/src/main/AndroidManifest.xml`: トイ登録（`com.nothing.glyph.TOY`）/ 権限
+- `app/src/main/java/.../MainActivity.java`: Simple preview UI for emulator
+- `app/src/weekdayDevice/.../RippleWaveToyService.java`: Real device toy service (Glyph SDK integration)
+- `app/src/main/java/.../WeekdayPreviewActivity.java`: Weekday preview screen
+- `app/src/main/AndroidManifest.xml`: Toy registration (`com.nothing.glyph.TOY`) / permissions
 
-## ビルド/インストール
+## Build & Installation
 
-1. Android Studio でプロジェクトを開く
-2. `app/libs/` に Glyph Matrix SDK (`glyph-matrix-sdk-1.0.aar`) を配置
-3. 実機ビルドで APK を作成し、Nothing Phone にインストール
+1. Open the project in Android Studio
+2. Place Glyph Matrix SDK (`glyph-matrix-sdk-1.0.aar`) in `app/libs/`
+3. Build APK for real device and install on Nothing Phone
 
-## 使用方法
+## Usage
 
-### 実機での使用
-1. Nothing Phone の設定 > Glyph Interface > Glyph Toys で「GlyphDayJP」を選択
-2. グリフボタンを短押ししてトイを切り替え
-3. 長押しで白黒反転表示を切り替え
-4. 端末をシェイクすると粒子アニメーションが開始
+### On Real Device
+1. Go to Nothing Phone Settings > Glyph Interface > Glyph Toys and select "GlyphDayJP"
+2. Short press the Glyph Button to cycle through toys
+3. Long press to toggle white/black inverted display
+4. Shake the device to start particle animation
 
-### エミュレータでの確認
-1. アプリを起動して「曜日プレビュー」ボタンをタップ
-2. 各曜日の漢字表示を確認可能
+### Emulator Preview
+1. Launch the app and tap "Weekday Preview" button
+2. View all weekday kanji characters
 
-## 技術仕様
+## Technical Specifications
 
-- **表示領域**: 25×25 ピクセル（円形マスク適用）
-- **フォント**: システムデフォルトボールド
-- **アンチエイリアス**: 有効
-- **アニメーション**: 粒子落下エフェクト（40fps）
-- **センサー**: 加速度センサー（シェイク検出）
+- **Display Area**: 25×25 pixels (circular mask applied)
+- **Font**: System default bold
+- **Anti-aliasing**: Enabled
+- **Animation**: Particle falling effect (40fps)
+- **Sensors**: Accelerometer (shake detection)
 
-## 開発環境
+## Development Environment
 
-- **Android Studio**: Arctic Fox 以降
-- **最小SDK**: API 21 (Android 5.0)
-- **対象SDK**: API 34 (Android 14)
+- **Android Studio**: Arctic Fox or later
+- **Min SDK**: API 21 (Android 5.0)
+- **Target SDK**: API 34 (Android 14)
 - **Glyph Matrix SDK**: 1.0
 
-## ライセンス
+## License
 
-このプロジェクトは Glyph Matrix Developer Kit を使用して作成されています。
+This project is created using the Glyph Matrix Developer Kit.
 
-## 貢献
+## Contributing
 
-バグ報告や機能要望は [Issues](https://github.com/yuk1-kondo/GlyphDayJP/issues) でお知らせください。
+Please report bugs and feature requests in [Issues](https://github.com/yuk1-kondo/GlyphDayJP/issues).
 
-## 作者
+## Author
 
 [yuk1-kondo](https://github.com/yuk1-kondo)
 
 ---
 
-**注意**: このトイは Nothing Phone の Glyph Matrix 機能を使用します。対応機種でのみ動作します。
+**Note**: This toy uses Nothing Phone's Glyph Matrix functionality. It only works on compatible devices.
