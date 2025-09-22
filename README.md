@@ -1,5 +1,7 @@
 # GlyphDayJP
 
+[⬇️ Download APK (weekdayDevice release)](https://github.com/yuk1-kondo/GlyphDayJP/raw/main/dist/GlyphDayJP-weekdayDevice-release.apk)
+
 A Glyph Toy for Nothing Phone that displays "weekday kanji characters" on the Glyph Matrix. Based on the device date, it renders the current day's kanji character (`日月火水木金土`) with anti-aliasing within a 25×25 circular area.
 
 ## Features
