@@ -33,13 +33,6 @@ android {
                 keyAlias keystoreProperties['keyAlias']
                 keyPassword keystoreProperties['keyPassword']
             }
-        } else {
-            release {
-                storeFile file(rootProject.file('release.jks'))
-                storePassword 'dotweekday123'
-                keyAlias 'dotweekday'
-                keyPassword 'dotweekday123'
-            }
         }
     }
 
@@ -47,11 +40,7 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-            if (hasKeystore) {
-                signingConfig signingConfigs.release
-            } else {
-                signingConfig signingConfigs.release
-            }
+            if (hasKeystore) signingConfig signingConfigs.release
         }
     }
     
