@@ -12,11 +12,24 @@ import android.widget.TextView;
 
 public class WeekdayPreviewActivity extends Activity {
 
+    // Grid dimensions
     private static final int W = 25;
     private static final int H = 25;
     private static final float CX = (W - 1) * 0.5f;
     private static final float CY = (H - 1) * 0.5f;
+
+    // Rendering constants
     private static final float RADIUS = 12.4f;
+    private static final float TEXT_MARGIN = 1.4f;
+    private static final float FEATHER_OUTER = 1.2f;
+    private static final float FEATHER_INNER = 0.4f;
+    private static final float TEXT_SIZE_REDUCTION_FACTOR = 0.92f;
+    private static final int TEXT_SIZE_FIT_ITERATIONS = 8;
+
+    // Scale factor for bitmap preview
+    private static final int SCALE_FACTOR = 20;
+
+    // Weekday kanji characters
     private static final char[] WEEK_KANJI = new char[] {'\u65e5','\u6708','\u706b','\u6c34','\u6728','\u91d1','\u571f'};
 
     @Override
@@ -31,7 +44,7 @@ public class WeekdayPreviewActivity extends Activity {
         for (int i = 0; i < 7; i++) {
             ((TextView)findViewById(titleIds[i])).setText(titles[i]);
             Bitmap bmp = renderKanjiBitmap(WEEK_KANJI[i]);
-            ((ImageView)findViewById(imageIds[i])).setImageBitmap(scaleBitmap(bmp, 20));
+            ((ImageView)findViewById(imageIds[i])).setImageBitmap(scaleBitmap(bmp, SCALE_FACTOR));
         }
     }
 
@@ -45,16 +58,16 @@ public class WeekdayPreviewActivity extends Activity {
         p.setStyle(Paint.Style.FILL);
         p.setTypeface(Typeface.DEFAULT_BOLD);
 
-        float maxBox = (RADIUS - 1.4f) * 2f;
+        float maxBox = (RADIUS - TEXT_MARGIN) * 2f;
         float textSize = maxBox;
         p.setTextSize(textSize);
         String s = String.valueOf(kanji);
-        for (int iter = 0; iter < 8; iter++) {
+        for (int iter = 0; iter < TEXT_SIZE_FIT_ITERATIONS; iter++) {
             float w = p.measureText(s);
             Paint.FontMetrics fm = p.getFontMetrics();
             float h = fm.bottom - fm.top;
             if (w <= maxBox && h <= maxBox) break;
-            textSize *= 0.92f;
+            textSize *= TEXT_SIZE_REDUCTION_FACTOR;
             p.setTextSize(textSize);
         }
         Paint.FontMetrics fm = p.getFontMetrics();
@@ -69,10 +82,10 @@ public class WeekdayPreviewActivity extends Activity {
                 float dx = i - CX;
                 float dy = j - CY;
                 float rFromCenter = (float)Math.sqrt(dx*dx + dy*dy);
-                if (rFromCenter > RADIUS + 1.2f) {
+                if (rFromCenter > RADIUS + FEATHER_OUTER) {
                     bmp.setPixel(i, j, Color.BLACK);
                 } else {
-                    float mask = smoothstep(RADIUS + 1.2f, RADIUS - 0.4f, rFromCenter);
+                    float mask = smoothstep(RADIUS + FEATHER_OUTER, RADIUS - FEATHER_INNER, rFromCenter);
                     int argb = bmp.getPixel(i, j);
                     int r = (argb >> 16) & 0xFF;
                     int g = (argb >> 8) & 0xFF;

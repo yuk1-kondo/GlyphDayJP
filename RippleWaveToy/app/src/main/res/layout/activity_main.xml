@@ -3,68 +3,69 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="24dp"
-    android:background="#000000"
+    android:padding="@dimen/spacing_large"
+    android:background="@color/background_dark"
     android:gravity="center">
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/title_main"
-        android:textSize="32sp"
-        android:textColor="#FFFFFF"
+        android:textSize="@dimen/text_size_title"
+        android:textColor="@color/text_primary"
+        android:textStyle="bold"
         android:gravity="center"
-        android:layout_marginBottom="8dp"/>
+        android:layout_marginBottom="@dimen/spacing_small"/>
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/subtitle_main"
-        android:textSize="18sp"
-        android:textColor="#CCCCCC"
+        android:textSize="@dimen/text_size_subtitle"
+        android:textColor="@color/text_secondary"
         android:gravity="center"
-        android:layout_marginBottom="32dp"/>
+        android:layout_marginBottom="@dimen/spacing_xlarge"/>
 
     <Button
         android:id="@+id/toy_info_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/btn_toy_info"
-        android:textSize="16sp"
-        android:padding="12dp"
-        android:background="#2196F3"
-        android:textColor="#FFFFFF"
-        android:layout_marginBottom="16dp"/>
+        android:textSize="@dimen/text_size_body"
+        android:padding="@dimen/button_padding_vertical"
+        android:background="@color/button_blue"
+        android:textColor="@color/text_primary"
+        android:layout_marginBottom="@dimen/spacing_medium"/>
 
     <Button
         android:id="@+id/weekday_preview_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/btn_weekday_preview"
-        android:textSize="18sp"
-        android:padding="16dp"
-        android:background="#9C27B0"
-        android:textColor="#FFFFFF"
-        android:layout_marginBottom="24dp"/>
+        android:textSize="@dimen/text_size_subtitle"
+        android:padding="@dimen/button_padding_horizontal"
+        android:background="@color/button_purple"
+        android:textColor="@color/text_primary"
+        android:layout_marginBottom="@dimen/spacing_large"/>
 
     <TextView
         android:id="@+id/info_text"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text=""
-        android:textSize="14sp"
-        android:textColor="#CCCCCC"
+        android:textSize="@dimen/text_size_small"
+        android:textColor="@color/text_secondary"
         android:gravity="center"
         android:visibility="gone"
-        android:lineSpacingExtra="4dp"/>
+        android:lineSpacingExtra="@dimen/spacing_tiny"/>
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/footer_note"
-        android:textSize="12sp"
-        android:textColor="#888888"
+        android:textSize="@dimen/text_size_tiny"
+        android:textColor="@color/text_tertiary"
         android:gravity="center"
-        android:layout_marginTop="32dp"/>
+        android:layout_marginTop="@dimen/spacing_xlarge"/>
 
 </LinearLayout>

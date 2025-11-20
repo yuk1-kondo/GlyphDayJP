@@ -42,11 +42,47 @@ public class RippleWaveToyService extends Service {
     // TEMP flag disabled: use real device date
     private static final boolean DEBUG_FORCE_FRIDAY = false;
 
+    // Grid dimensions
     private static final int W = 25;
     private static final int H = 25;
     private static final float CX = (W - 1) * 0.5f;
     private static final float CY = (H - 1) * 0.5f;
+
+    // Rendering constants
     private static final float RADIUS = 12.4f;
+    private static final float TEXT_MARGIN = 1.4f;
+    private static final float FEATHER_OUTER = 1.2f;
+    private static final float FEATHER_INNER = 0.4f;
+    private static final float TEXT_SIZE_REDUCTION_FACTOR = 0.92f;
+    private static final int TEXT_SIZE_FIT_ITERATIONS = 8;
+    private static final float TARGET_LEVEL_THRESHOLD = 0.06f;
+
+    // Brightness values
+    private static final int MAX_BRIGHTNESS = 2040;
+    private static final int FALLING_DOT_BRIGHTNESS = 1600;
+    private static final int TRAIL_BRIGHTNESS = 500;
+    private static final int COLLAPSE_BRIGHTNESS = 1800;
+
+    // Animation timing
+    private static final long ANIM_FRAME_INTERVAL_MS = 40L;
+    private static final long RESTART_DELAY_MS = 5000L;
+    private static final long DEBUG_CYCLE_INTERVAL_MS = 3000L;
+
+    // Particle physics
+    private static final float FALL_SPEED_MIN = 0.5f;
+    private static final float FALL_SPEED_RANGE = 0.7f;
+    private static final double SPAWN_START_Y_MIN = 3.0;
+    private static final double SPAWN_START_Y_RANGE = 10.0;
+    private static final double COLLAPSE_VX_RANGE = 1.2;
+    private static final double COLLAPSE_VX_OFFSET = 0.6;
+    private static final double COLLAPSE_VY_RANGE = 0.6;
+    private static final double COLLAPSE_VY_OFFSET = 0.2;
+    private static final float COLLAPSE_GRAVITY = 0.08f;
+    private static final float COLLAPSE_DAMPING = 0.985f;
+
+    // Sensor constants
+    private static final float SHAKE_THRESHOLD = 15.0f;
+    private static final long SHAKE_COOLDOWN_MS = 800L;
 
     private GlyphMatrixManager mGM;
     private GlyphMatrixManager.Callback mCallback;
@@ -220,7 +256,7 @@ public class RippleWaveToyService extends Service {
                         debugCycleIndex = (debugCycleIndex + 1) % WEEK_KANJI.length;
                     });
                 }
-            }, 0L, 3000L, TimeUnit.MILLISECONDS);
+            }, 0L, DEBUG_CYCLE_INTERVAL_MS, TimeUnit.MILLISECONDS);
         } else {
             // 通常モード: 日付に基づく表示
             long delay = millisUntilNextMidnight();
@@ -274,8 +310,8 @@ public class RippleWaveToyService extends Service {
         if (invertEnabled) {
             for (int i = 0; i < frameBuf.length; i++) {
                 int v = frameBuf[i];
-                if (v < 0) v = 0; else if (v > 2040) v = 2040;
-                frameBuf[i] = 2040 - v;
+                if (v < 0) v = 0; else if (v > MAX_BRIGHTNESS) v = MAX_BRIGHTNESS;
+                frameBuf[i] = MAX_BRIGHTNESS - v;
             }
         }
 
@@ -319,49 +355,84 @@ public class RippleWaveToyService extends Service {
                 stepAnimation();
                 renderAndPresent();
             });
-        }, 0L, 40L, TimeUnit.MILLISECONDS);
+        }, 0L, ANIM_FRAME_INTERVAL_MS, TimeUnit.MILLISECONDS);
     }
 
     private void stepAnimation() {
         if (!animActive) return;
         animTicks++;
-        // Modes
+
         if (animMode == ANIM_FALL) {
-            // spawn new particles gradually
-            spawnParticles(SPAWN_PER_TICK);
-            for (int idx = 0; idx < particles.size(); idx++) {
-                Particle p = particles.get(idx);
-                if (p.settled) continue;
-                p.y += p.vy;
-                if (p.y >= p.tj) {
-                    p.y = p.tj;
-                    p.settled = true;
-                    int fi = p.tj * W + p.ti;
-                    reservedMask[fi] = false;
-                    if (!filledMask[fi]) { filledMask[fi] = true; remainingToFill--; }
-                    // update next row for this column
-                    nextFillRow[p.ti] = findNextFillRow(p.ti);
-                }
-            }
-            if (remainingToFill <= 0) {
-                stopAnimation();
-                // do NOT auto-cycle unless explicitly enabled (legacy)
-            }
+            stepFallAnimation();
         } else if (animMode == ANIM_COLLAPSE) {
-            boolean any = false;
-            for (int i = 0; i < particles.size(); i++) {
-                Particle p = particles.get(i);
-                if (p.settled) continue;
-                any = true;
-                p.vy += p.ay;
-                p.x += p.vx;
-                p.y += p.vy;
-                p.vx *= 0.985f;
-                if (p.y >= H || p.x < -1 || p.x > W) { p.settled = true; }
+            stepCollapseAnimation();
+        }
+    }
+
+    /**
+     * Updates the falling particle animation (ANIM_FALL mode).
+     */
+    private void stepFallAnimation() {
+        // Spawn new particles gradually
+        spawnParticles(SPAWN_PER_TICK);
+
+        // Update particle positions
+        for (int idx = 0; idx < particles.size(); idx++) {
+            Particle p = particles.get(idx);
+            if (p.settled) continue;
+
+            p.y += p.vy;
+
+            // Check if particle reached target position
+            if (p.y >= p.tj) {
+                p.y = p.tj;
+                p.settled = true;
+                int fi = p.tj * W + p.ti;
+                reservedMask[fi] = false;
+
+                if (!filledMask[fi]) {
+                    filledMask[fi] = true;
+                    remainingToFill--;
+                }
+
+                // Update next row for this column
+                nextFillRow[p.ti] = findNextFillRow(p.ti);
             }
-            if (!any) {
-                stopAnimation();
+        }
+
+        // Check if animation is complete
+        if (remainingToFill <= 0) {
+            stopAnimation();
+        }
+    }
+
+    /**
+     * Updates the collapse particle animation (ANIM_COLLAPSE mode).
+     */
+    private void stepCollapseAnimation() {
+        boolean anyActive = false;
+
+        for (int i = 0; i < particles.size(); i++) {
+            Particle p = particles.get(i);
+            if (p.settled) continue;
+
+            anyActive = true;
+
+            // Apply physics
+            p.vy += p.ay;
+            p.x += p.vx;
+            p.y += p.vy;
+            p.vx *= COLLAPSE_DAMPING;
+
+            // Check if particle is out of bounds
+            if (p.y >= H || p.x < -1 || p.x > W) {
+                p.settled = true;
             }
+        }
+
+        // Stop animation if all particles have settled
+        if (!anyActive) {
+            stopAnimation();
         }
     }
 
@@ -371,7 +442,7 @@ public class RippleWaveToyService extends Service {
             for (int i = 0; i < W; i++) {
                 if (filledMask[j * W + i]) {
                     int idx = j * W + i;
-                    int brightness = (int)(Math.max(0f, Math.min(1f, targetLevel[idx])) * 2040f + 0.5f);
+                    int brightness = (int)(Math.max(0f, Math.min(1f, targetLevel[idx])) * MAX_BRIGHTNESS + 0.5f);
                     frameBuf[idx] = brightness;
                 }
             }
@@ -382,8 +453,7 @@ public class RippleWaveToyService extends Service {
             if (xi < 0 || xi >= W || yj < 0 || yj >= H) continue;
             int idx = yj * W + xi;
             if (!filledMask[idx]) {
-                int pb = 1600; // bright falling dot
-                if (pb > frameBuf[idx]) frameBuf[idx] = pb;
+                if (FALLING_DOT_BRIGHTNESS > frameBuf[idx]) frameBuf[idx] = FALLING_DOT_BRIGHTNESS;
             }
             // subtler 1px trail every other frame
             if ((animTicks & 1) == 0) {
@@ -391,8 +461,7 @@ public class RippleWaveToyService extends Service {
                 if (yj2 >= 0) {
                     int idx2 = yj2 * W + xi;
                     if (!filledMask[idx2]) {
-                        int tb = 500;
-                        if (tb > frameBuf[idx2]) frameBuf[idx2] = tb;
+                        if (TRAIL_BRIGHTNESS > frameBuf[idx2]) frameBuf[idx2] = TRAIL_BRIGHTNESS;
                     }
                 }
             }
@@ -406,7 +475,7 @@ public class RippleWaveToyService extends Service {
             int xi = (int)(p.x + 0.5f);
             int yj = (int)(p.y + 0.5f);
             if (xi < 0 || xi >= W || yj < 0 || yj >= H) continue;
-            frameBuf[yj * W + xi] = 1800;
+            frameBuf[yj * W + xi] = COLLAPSE_BRIGHTNESS;
         }
     }
 
@@ -419,46 +488,36 @@ public class RippleWaveToyService extends Service {
             System.arraycopy(level, 0, targetLevel, 0, targetLevel.length);
             return;
         }
-        for (int i = 0; i < targetMask.length; i++) { targetMask[i] = false; targetLevel[i] = 0f; }
-        Bitmap bmp = Bitmap.createBitmap(W, H, Bitmap.Config.ARGB_8888);
-        Canvas canvas = new Canvas(bmp);
-        canvas.drawColor(Color.BLACK);
-        Paint p = new Paint(Paint.ANTI_ALIAS_FLAG);
-        p.setColor(Color.WHITE);
-        p.setTextAlign(Paint.Align.CENTER);
-        p.setStyle(Paint.Style.FILL);
-        p.setTypeface(Typeface.DEFAULT_BOLD);
-        float maxBox = (RADIUS - 1.4f) * 2f;
-        float textSize = maxBox; p.setTextSize(textSize);
-        String s = String.valueOf(kanji);
-        for (int iter = 0; iter < 8; iter++) {
-            float w = p.measureText(s);
-            Paint.FontMetrics fm = p.getFontMetrics();
-            float h = fm.bottom - fm.top;
-            if (w <= maxBox && h <= maxBox) break;
-            textSize *= 0.92f; p.setTextSize(textSize);
+
+        // Clear target arrays
+        for (int i = 0; i < targetMask.length; i++) {
+            targetMask[i] = false;
+            targetLevel[i] = 0f;
         }
-        Paint.FontMetrics fm = p.getFontMetrics();
-        float baseline = CY - (fm.ascent + fm.descent) * 0.5f;
-        canvas.drawText(s, CX, baseline, p);
+
+        // Create kanji bitmap using helper method
+        Bitmap bmp = createKanjiBitmap(kanji);
+
+        // Apply circular mask and extract pixel values
         for (int j = 0; j < H; j++) {
             for (int i = 0; i < W; i++) {
-                float dx = i - CX, dy = j - CY;
-                float rFromCenter = (float)Math.sqrt(dx*dx + dy*dy);
-                if (rFromCenter > RADIUS + 1.2f) { continue; }
+                float radialMask = computeRadialMask(i, j);
+                if (radialMask <= 0f) continue;
+
                 int argb = bmp.getPixel(i, j);
-                int r = (argb >> 16) & 0xFF, g = (argb >> 8) & 0xFF, b = (argb) & 0xFF;
-                float gray = (r + g + b) / 3f;
-                float radialMask = smoothstep(RADIUS + 1.2f, RADIUS - 0.4f, rFromCenter);
+                float gray = getGrayscaleValue(argb);
                 float valN = (gray / 255f) * radialMask;
-                if (valN > 0.06f) {
+
+                if (valN > TARGET_LEVEL_THRESHOLD) {
                     int idx = j * W + i;
                     targetMask[idx] = true;
                     targetLevel[idx] = valN;
                 }
             }
         }
+
         bmp.recycle();
+
         // Cache results for reuse
         boolean[] maskCopy = new boolean[targetMask.length];
         float[] levelCopy = new float[targetLevel.length];
@@ -497,8 +556,8 @@ public class RippleWaveToyService extends Service {
             if (row < 0) break;
             int idx = row * W + col;
             reservedMask[idx] = true;
-            float startY = - (float)(Math.random() * 10.0 + 3.0);
-            float vy = (float)(Math.random() * 0.7 + 0.5f); // 0.5..1.2 px/tick (slower)
+            float startY = - (float)(Math.random() * SPAWN_START_Y_RANGE + SPAWN_START_Y_MIN);
+            float vy = (float)(Math.random() * FALL_SPEED_RANGE + FALL_SPEED_MIN);
             particles.add(new Particle(col, startY, vy, col, row));
         }
     }
@@ -509,10 +568,9 @@ public class RippleWaveToyService extends Service {
         for (int j = 0; j < H; j++) {
             for (int i = 0; i < W; i++) {
                 if (!filledMask[j * W + i]) continue;
-                float vx = (float)(Math.random() * 1.2 - 0.6);
-                float vy = (float)(Math.random() * -0.6 - 0.2);
-                float ay = 0.08f;
-                particles.add(new Particle(i, j, vx, vy, ay));
+                float vx = (float)(Math.random() * COLLAPSE_VX_RANGE - COLLAPSE_VX_OFFSET);
+                float vy = (float)(Math.random() * -COLLAPSE_VY_RANGE - COLLAPSE_VY_OFFSET);
+                particles.add(new Particle(i, j, vx, vy, COLLAPSE_GRAVITY));
             }
         }
         for (int idx = 0; idx < filledMask.length; idx++) filledMask[idx] = false;
@@ -544,14 +602,14 @@ public class RippleWaveToyService extends Service {
             float ax = event.values[0], ay = event.values[1], az = event.values[2];
             float g = (float)Math.sqrt(ax*ax + ay*ay + az*az);
             long now = System.currentTimeMillis();
-            if (g > 15.0f && now - lastShakeMs > 800) {
+            if (g > SHAKE_THRESHOLD && now - lastShakeMs > SHAKE_COOLDOWN_MS) {
                 lastShakeMs = now;
                 if (!isAodMode) {
                     stopAnimation();
                     startCollapse();
                     if (restartRunnable != null) { serviceHandler.removeCallbacks(restartRunnable); }
                     restartRunnable = () -> { if (!isAodMode && !animActive) startFallingToKanji(getWeekdayKanji()); };
-                    serviceHandler.postDelayed(restartRunnable, 5_000L);
+                    serviceHandler.postDelayed(restartRunnable, RESTART_DELAY_MS);
                 }
             }
         }
@@ -565,44 +623,34 @@ public class RippleWaveToyService extends Service {
             System.arraycopy(cached, 0, frameBuf, 0, frameBuf.length);
             return;
         }
+
+        // Clear frame buffer
         for (int i = 0; i < frameBuf.length; i++) frameBuf[i] = 0;
-        Bitmap bmp = Bitmap.createBitmap(W, H, Bitmap.Config.ARGB_8888);
-        Canvas canvas = new Canvas(bmp);
-        canvas.drawColor(Color.BLACK);
-        Paint p = new Paint(Paint.ANTI_ALIAS_FLAG);
-        p.setColor(Color.WHITE);
-        p.setTextAlign(Paint.Align.CENTER);
-        p.setStyle(Paint.Style.FILL);
-        p.setTypeface(Typeface.DEFAULT_BOLD);
-        float maxBox = (RADIUS - 1.4f) * 2f;
-        float textSize = maxBox; p.setTextSize(textSize);
-        String s = String.valueOf(kanji);
-        for (int iter = 0; iter < 8; iter++) {
-            float w = p.measureText(s);
-            Paint.FontMetrics fm = p.getFontMetrics();
-            float h = fm.bottom - fm.top;
-            if (w <= maxBox && h <= maxBox) break;
-            textSize *= 0.92f; p.setTextSize(textSize);
-        }
-        Paint.FontMetrics fm = p.getFontMetrics();
-        float baseline = CY - (fm.ascent + fm.descent) * 0.5f;
-        canvas.drawText(s, CX, baseline, p);
+
+        // Create kanji bitmap using helper method
+        Bitmap bmp = createKanjiBitmap(kanji);
+
+        // Apply circular mask and convert to brightness values
         int idx = 0;
         for (int j = 0; j < H; j++) {
             for (int i = 0; i < W; i++, idx++) {
-                float dx = i - CX, dy = j - CY;
-                float rFromCenter = (float)Math.sqrt(dx*dx + dy*dy);
-                if (rFromCenter > RADIUS + 1.2f) { frameBuf[idx] = 0; continue; }
-                float mask = smoothstep(RADIUS + 1.2f, RADIUS - 0.4f, rFromCenter);
+                float mask = computeRadialMask(i, j);
+                if (mask <= 0f) {
+                    frameBuf[idx] = 0;
+                    continue;
+                }
+
                 int argb = bmp.getPixel(i, j);
-                int r = (argb >> 16) & 0xFF, g = (argb >> 8) & 0xFF, b = (argb) & 0xFF;
-                float gray = (r + g + b) / 3f;
+                float gray = getGrayscaleValue(argb);
                 float valN = (gray / 255f) * mask;
-                int brightness = (int)(Math.max(0f, Math.min(1f, valN)) * 2040f + 0.5f);
+                int brightness = (int)(Math.max(0f, Math.min(1f, valN)) * MAX_BRIGHTNESS + 0.5f);
                 frameBuf[idx] = brightness;
             }
         }
+
         bmp.recycle();
+
+        // Cache result for reuse
         int[] frameCopy = new int[frameBuf.length];
         System.arraycopy(frameBuf, 0, frameCopy, 0, frameBuf.length);
         cachedStaticFrame.put(kanji, frameCopy);
@@ -633,6 +681,69 @@ public class RippleWaveToyService extends Service {
         return t * t * (3f - 2f * t);
     }
     private static float clamp01(float v) { return v < 0f ? 0f : (v > 1f ? 1f : v); }
+
+    /**
+     * Creates a bitmap with the specified kanji character rendered with circular feathering.
+     * This is a helper method to eliminate code duplication between buildTargetMask and renderKanjiFrame.
+     */
+    private Bitmap createKanjiBitmap(char kanji) {
+        Bitmap bmp = Bitmap.createBitmap(W, H, Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bmp);
+        canvas.drawColor(Color.BLACK);
+
+        Paint p = new Paint(Paint.ANTI_ALIAS_FLAG);
+        p.setColor(Color.WHITE);
+        p.setTextAlign(Paint.Align.CENTER);
+        p.setStyle(Paint.Style.FILL);
+        p.setTypeface(Typeface.DEFAULT_BOLD);
+
+        // Fit text size to available space
+        float maxBox = (RADIUS - TEXT_MARGIN) * 2f;
+        fitTextSize(p, String.valueOf(kanji), maxBox);
+
+        // Draw text centered
+        Paint.FontMetrics fm = p.getFontMetrics();
+        float baseline = CY - (fm.ascent + fm.descent) * 0.5f;
+        canvas.drawText(String.valueOf(kanji), CX, baseline, p);
+
+        return bmp;
+    }
+
+    /**
+     * Adjusts the text size of the paint to fit within the specified bounding box.
+     */
+    private void fitTextSize(Paint paint, String text, float maxBox) {
+        float textSize = maxBox;
+        paint.setTextSize(textSize);
+        for (int iter = 0; iter < TEXT_SIZE_FIT_ITERATIONS; iter++) {
+            float w = paint.measureText(text);
+            Paint.FontMetrics fm = paint.getFontMetrics();
+            float h = fm.bottom - fm.top;
+            if (w <= maxBox && h <= maxBox) break;
+            textSize *= TEXT_SIZE_REDUCTION_FACTOR;
+            paint.setTextSize(textSize);
+        }
+    }
+
+    /**
+     * Computes the radial distance and applies smoothstep feathering.
+     */
+    private float computeRadialMask(int i, int j) {
+        float dx = i - CX, dy = j - CY;
+        float rFromCenter = (float)Math.sqrt(dx * dx + dy * dy);
+        if (rFromCenter > RADIUS + FEATHER_OUTER) return 0f;
+        return smoothstep(RADIUS + FEATHER_OUTER, RADIUS - FEATHER_INNER, rFromCenter);
+    }
+
+    /**
+     * Extracts grayscale value from an ARGB pixel.
+     */
+    private float getGrayscaleValue(int argb) {
+        int r = (argb >> 16) & 0xFF;
+        int g = (argb >> 8) & 0xFF;
+        int b = argb & 0xFF;
+        return (r + g + b) / 3f;
+    }
 }
 
 
