@@ -1,4 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Launcher -->
     <color name="ic_launcher_background">#000000</color>
+
+    <!-- Primary colors -->
+    <color name="primary_black">#000000</color>
+    <color name="primary_white">#FFFFFF</color>
+
+    <!-- UI colors -->
+    <color name="button_blue">#2196F3</color>
+    <color name="button_purple">#9C27B0</color>
+    <color name="button_blue_pressed">#1976D2</color>
+    <color name="button_purple_pressed">#7B1FA2</color>
+
+    <!-- Text colors -->
+    <color name="text_primary">#FFFFFF</color>
+    <color name="text_secondary">#B0B0B0</color>
+    <color name="text_tertiary">#808080</color>
+
+    <!-- Background colors -->
+    <color name="background_dark">#000000</color>
+    <color name="background_light">#1A1A1A</color>
 </resources>
